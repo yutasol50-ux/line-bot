@@ -1,10 +1,15 @@
 from flask import Flask, request
 import requests
 import os
+import google.generativeai as genai
 
 app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("CHANNEL_ACCESS_TOKEN")
+GEMMA_API_KEY = os.environ.get("GEMMA_API_KEY")
+
+genai.configure(api_key=GEMMA_API_KEY)
+model = genai.GenerativeModel("gemini-2.0-flash")
 
 @app.route("/", methods=["GET"])
 def index():
@@ -22,17 +27,23 @@ def callback():
     for event in body["events"]:
         if event["type"] == "message" and event["message"]["type"] == "text":
             reply_token = event["replyToken"]
-            text = event["message"]["text"]
+            user_text = event["message"]["text"]
 
-            res = requests.post(
+            try:
+                response = model.generate_content(user_text)
+                reply_text = response.text
+            except Exception as e:
+                reply_text = "エラーが発生しました。"
+                print(f"Gemini error: {e}")
+
+            requests.post(
                 "https://api.line.me/v2/bot/message/reply",
                 headers={"Authorization": f"Bearer {ACCESS_TOKEN}"},
                 json={
                     "replyToken": reply_token,
-                    "messages": [{"type": "text", "text": text}]
+                    "messages": [{"type": "text", "text": reply_text}]
                 }
             )
-            print(f"LINE API response: {res.status_code} {res.text}")
     return "OK", 200
 
 if __name__ == "__main__":
