@@ -6,11 +6,18 @@ app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("CHANNEL_ACCESS_TOKEN")
 
-@app.route("/callback", methods=["POST"])
+@app.route("/", methods=["GET"])
+def index():
+    return "OK", 200
+
+@app.route("/callback", methods=["GET", "POST"])
 def callback():
-    body = request.json
+    if request.method == "GET":
+        return "OK", 200
+
+    body = request.get_json(force=True, silent=True)
     if not body or "events" not in body:
-        return "OK"
+        return "OK", 200
 
     for event in body["events"]:
         if event["type"] == "message" and event["message"]["type"] == "text":
@@ -25,7 +32,7 @@ def callback():
                     "messages": [{"type": "text", "text": text}]
                 }
             )
-    return "OK"
+    return "OK", 200
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
