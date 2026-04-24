@@ -24,7 +24,7 @@ def callback():
             reply_token = event["replyToken"]
             text = event["message"]["text"]
 
-            requests.post(
+            res = requests.post(
                 "https://api.line.me/v2/bot/message/reply",
                 headers={"Authorization": f"Bearer {ACCESS_TOKEN}"},
                 json={
@@ -32,6 +32,7 @@ def callback():
                     "messages": [{"type": "text", "text": text}]
                 }
             )
+            print(f"LINE API response: {res.status_code} {res.text}")
     return "OK", 200
 
 if __name__ == "__main__":
