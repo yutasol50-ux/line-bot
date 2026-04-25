@@ -1,10 +1,12 @@
 from flask import Flask, request
 import requests
 import os
+import cohere
 
 app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("CHANNEL_ACCESS_TOKEN")
+co = cohere.ClientV2(api_key=os.environ.get("COHERE_API_KEY"))
 
 @app.route("/", methods=["GET"])
 def index():
@@ -22,14 +24,24 @@ def callback():
     for event in body["events"]:
         if event["type"] == "message" and event["message"]["type"] == "text":
             reply_token = event["replyToken"]
-            text = event["message"]["text"]
+            user_text = event["message"]["text"]
+
+            try:
+                response = co.chat(
+                    model="command-r-plus-08-2024",
+                    messages=[{"role": "user", "content": user_text}]
+                )
+                reply_text = response.message.content[0].text
+            except Exception as e:
+                reply_text = "エラーが発生しました。"
+                print(f"Cohere error: {e}")
 
             requests.post(
                 "https://api.line.me/v2/bot/message/reply",
                 headers={"Authorization": f"Bearer {ACCESS_TOKEN}"},
                 json={
                     "replyToken": reply_token,
-                    "messages": [{"type": "text", "text": text}]
+                    "messages": [{"type": "text", "text": reply_text}]
                 }
             )
     return "OK", 200
