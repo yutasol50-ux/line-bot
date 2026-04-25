@@ -26,6 +26,8 @@ def callback():
             reply_token = event["replyToken"]
             user_text = event["message"]["text"]
 
+            print(f"USER_ID: {event['source']['userId']}")
+
             try:
                 response = co.chat(
                     model="command-r-plus-08-2024",
