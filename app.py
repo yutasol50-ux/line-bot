@@ -31,7 +31,7 @@ def callback():
 
             try:
                 result = hf_client.chat.completions.create(
-                    model="meta-llama/Llama-3.2-3B-Instruct",
+                    model="Qwen/Qwen2.5-72B-Instruct",
                     messages=[{"role": "user", "content": user_text}],
                     max_tokens=500
                 )
