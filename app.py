@@ -6,10 +6,7 @@ from huggingface_hub import InferenceClient
 app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("CHANNEL_ACCESS_TOKEN")
-hf_client = InferenceClient(
-    provider="hf-inference",
-    api_key=os.environ.get("HF_TOKEN")
-)
+hf_client = InferenceClient(api_key=os.environ.get("HF_TOKEN"))
 
 @app.route("/", methods=["GET"])
 def index():
@@ -31,7 +28,7 @@ def callback():
 
             try:
                 result = hf_client.chat.completions.create(
-                    model="Qwen/Qwen2.5-72B-Instruct",
+                    model="mistralai/Mistral-7B-Instruct-v0.3",
                     messages=[{"role": "user", "content": user_text}],
                     max_tokens=500
                 )
