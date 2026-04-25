@@ -1,12 +1,15 @@
 from flask import Flask, request
 import requests
 import os
-from google import genai
+from huggingface_hub import InferenceClient
 
 app = Flask(__name__)
 
 ACCESS_TOKEN = os.environ.get("CHANNEL_ACCESS_TOKEN")
-client = genai.Client(api_key=os.environ.get("GEMMA_API_KEY"))
+hf_client = InferenceClient(
+    provider="hf-inference",
+    api_key=os.environ.get("HF_TOKEN")
+)
 
 @app.route("/", methods=["GET"])
 def index():
@@ -27,14 +30,15 @@ def callback():
             user_text = event["message"]["text"]
 
             try:
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash-lite",
-                    contents=user_text
+                result = hf_client.chat.completions.create(
+                    model="meta-llama/Llama-3.2-3B-Instruct",
+                    messages=[{"role": "user", "content": user_text}],
+                    max_tokens=500
                 )
-                reply_text = response.text
+                reply_text = result.choices[0].message.content
             except Exception as e:
                 reply_text = "エラーが発生しました。"
-                print(f"Gemini error: {e}")
+                print(f"HF error: {e}")
 
             requests.post(
                 "https://api.line.me/v2/bot/message/reply",
