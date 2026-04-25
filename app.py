@@ -28,7 +28,7 @@ def callback():
 
             try:
                 result = hf_client.chat.completions.create(
-                    model="mistralai/Mistral-7B-Instruct-v0.3",
+                    model="HuggingFaceH4/zephyr-7b-beta",
                     messages=[{"role": "user", "content": user_text}],
                     max_tokens=500
                 )
